@@ -30,6 +30,7 @@
 @property (nonatomic, readonly) NSString* callbackId;
 @property (nonatomic, readonly) NSString* className;
 @property (nonatomic, readonly) NSString* methodName;
+@property (nonatomic, readwrite) NSDictionary* pluginContext;
 
 + (CDVInvokedUrlCommand*)commandFromJson:(NSArray*)jsonEntry;
 

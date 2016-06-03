@@ -19,8 +19,22 @@
 
 #import "CDVPlugin.h"
 #import "CDVWebViewEngineProtocol.h"
+#import <JavaScriptCore/JavaScriptCore.h>
 
-@interface CDVUIWebViewEngine : CDVPlugin <CDVWebViewEngineProtocol>
+
+@protocol CordovaNativeBridgeProtocol <JSExport>
+
+/* handles gap://ready from cordova.js*/
+- (void) handleBridgeData:(NSString*) data;
+
+/* Log console information for UIWebview*/
+#ifdef DEBUG
+-(void) consoleLog:(NSString*)log;
+#endif
+@end
+
+
+@interface CDVUIWebViewEngine : CDVPlugin <CDVWebViewEngineProtocol, CordovaNativeBridgeProtocol>
 
 @property (nonatomic, strong, readonly) id <UIWebViewDelegate> uiWebViewDelegate;
 

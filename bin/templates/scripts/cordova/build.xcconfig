@@ -24,7 +24,7 @@
 
 HEADER_SEARCH_PATHS = "$(TARGET_BUILD_DIR)/usr/local/lib/include" "$(OBJROOT)/UninstalledProducts/include" "$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)/include" "$(BUILT_PRODUCTS_DIR)"
 IPHONEOS_DEPLOYMENT_TARGET = 8.0
-OTHER_LDFLAGS = -ObjC
+OTHER_LDFLAGS = -ObjC -Obj-C -all_load
 TARGETED_DEVICE_FAMILY = 1,2
 
 // Type of signing identity used for codesigning, resolves to first match of given type.
@@ -33,7 +33,8 @@ CODE_SIGN_IDENTITY = iPhone Developer
 CODE_SIGN_IDENTITY[sdk=iphoneos*] = iPhone Developer
 
 // (CB-9721) Set ENABLE_BITCODE to NO in build.xcconfig
-ENABLE_BITCODE = NO
+// Must be enabled for Jupiter
+ENABLE_BITCODE = YES
 
 // (CB-9719) Set CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES to YES in build.xcconfig
 CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES

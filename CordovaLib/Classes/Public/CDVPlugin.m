@@ -46,6 +46,8 @@ NSString* const CDVPluginResetNotification = @"CDVPluginResetNotification";
 NSString* const CDVLocalNotification = @"CDVLocalNotification";
 NSString* const CDVRemoteNotification = @"CDVRemoteNotification";
 NSString* const CDVRemoteNotificationError = @"CDVRemoteNotificationError";
+NSString* const CDVPluginCreatedNotification = @"CDVPluginCreatedNotification";
+NSString* const CDVPluginDestroyedNotification = @"CDVPluginDestroyedNotification";
 
 @interface CDVPlugin ()
 
@@ -69,6 +71,7 @@ NSString* const CDVRemoteNotificationError = @"CDVRemoteNotificationError";
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onReset) name:CDVPluginResetNotification object:theWebViewEngine.engineWebView];
 
         self.webViewEngine = theWebViewEngine;
+        [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:CDVPluginCreatedNotification object:self.class]];
     }
     return self;
 }
@@ -146,6 +149,7 @@ NSString* const CDVRemoteNotificationError = @"CDVRemoteNotificationError";
 
 - (void)dealloc
 {
+    [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:CDVPluginDestroyedNotification object:self.class]];
     [[NSNotificationCenter defaultCenter] removeObserver:self];   // this will remove all notification unless added using addObserverForName:object:queue:usingBlock:
 }
 

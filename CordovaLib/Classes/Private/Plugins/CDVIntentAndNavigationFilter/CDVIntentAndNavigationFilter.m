@@ -73,40 +73,26 @@
 
 - (BOOL)shouldOverrideLoadWithRequest:(NSURLRequest*)request navigationType:(UIWebViewNavigationType)navigationType
 {
-    NSString* allowIntents_whitelistRejectionFormatString = @"ERROR External navigation rejected - <allow-intent> not set for url='%@'";
-    NSString* allowNavigations_whitelistRejectionFormatString = @"ERROR Internal navigation rejected - <allow-navigation> not set for url='%@'";
-    
-    NSURL* url = [request URL];
-    BOOL allowNavigationsPass = NO;
-    NSMutableArray* errorLogs = [NSMutableArray array];
-    
-    switch (navigationType) {
-        case UIWebViewNavigationTypeLinkClicked:
-            // Note that the rejection strings will *only* print if
-            // it's a link click (and url is not whitelisted by <allow-*>)
-            if ([self.allowIntentsWhitelist URLIsAllowed:url logFailure:NO]) {
-                // the url *is* in a <allow-intent> tag, push to the system
-                [[UIApplication sharedApplication] openURL:url];
-                return NO;
-            } else {
-                [errorLogs addObject:[NSString stringWithFormat:allowIntents_whitelistRejectionFormatString, [url absoluteString]]];
-            }
-            // fall through, to check whether you can load this in the webview
-        default:
-            // check whether we can internally navigate to this url
-            allowNavigationsPass = [self.allowNavigationsWhitelist URLIsAllowed:url logFailure:NO];
-            // log all failures only when this last filter fails
-            if (!allowNavigationsPass){
-                [errorLogs addObject:[NSString stringWithFormat:allowNavigations_whitelistRejectionFormatString, [url absoluteString]]];
-
-                // this is the last filter and it failed, now print out all previous error logs
-                for (NSString* errorLog in errorLogs) {
-                    NSLog(@"%@", errorLog);
-                }
-            }
-            
-            return allowNavigationsPass;
-    }
+	/*
+	 The original implementation checked the allowed intents only for clicked links. However there is content out there that uses location.href = "<app_scheme>://"
+	 which would not be processed correctly if the scheme is not allowed for internal navigation at least for WKWebView.
+	 The code below allows opening external apps if and only if the scheme is not in the allowed navigation schemes and 
+	 the scheme exists in allowed intent schemes explicitly of by using "*" scheme.
+	 The allowed navigation schemes specified in config.xml indicates that the application is able to process them.
+	 */
+	NSURL* url = [request URL];
+	
+	BOOL anyIntentAllowed = [self.allowIntentsWhitelist schemeIsAllowed:@"*"];
+	BOOL intentAllowed = [self.allowIntentsWhitelist URLIsAllowed:url logFailure:NO];
+	BOOL navAllowed = [self.allowNavigationsWhitelist URLIsAllowed:url logFailure:NO];
+	
+	if (!navAllowed && (anyIntentAllowed || intentAllowed))
+	{
+		[[UIApplication sharedApplication] openURL:url];
+		return NO;
+	}
+	
+	return YES;
 }
 
 @end

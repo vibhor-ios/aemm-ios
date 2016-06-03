@@ -35,6 +35,7 @@
 @implementation CDVUIWebViewEngine
 
 @synthesize engineWebView = _engineWebView;
+@synthesize pluginContext = _pluginContext;
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
@@ -42,6 +43,9 @@
     if (self) {
         self.engineWebView = [[UIWebView alloc] initWithFrame:frame];
         NSLog(@"Using UIWebView");
+		
+		JSContext *ctx = [self.engineWebView valueForKeyPath:@"documentView.webView.mainFrame.javaScriptContext"];
+		ctx[@"cordovaNativeBridge"] = self;
     }
 
     return self;
@@ -57,7 +61,7 @@
         self.uiWebViewDelegate = [[CDVUIWebViewDelegate alloc] initWithDelegate:(id <UIWebViewDelegate>)self.viewController];
         uiWebView.delegate = self.uiWebViewDelegate;
     } else {
-        self.navWebViewDelegate = [[CDVUIWebViewNavigationDelegate alloc] initWithEnginePlugin:self];
+        self.navWebViewDelegate = [[CDVUIWebViewNavigationDelegate alloc] initWithEnginePlugin:self andExternalDelegate:nil];
         self.uiWebViewDelegate = [[CDVUIWebViewDelegate alloc] initWithDelegate:self.navWebViewDelegate];
         uiWebView.delegate = self.uiWebViewDelegate;
     }
@@ -65,19 +69,36 @@
     [self updateSettings:self.commandDelegate.settings];
 }
 
+- (void) dispose
+{
+	[(UIWebView*)self.engineWebView stopLoading];
+	((UIWebView*)self.engineWebView).delegate = nil;
+	self.engineWebView = nil;
+	
+}
 - (void)evaluateJavaScript:(NSString*)javaScriptString completionHandler:(void (^)(id, NSError*))completionHandler
 {
-    NSString* ret = [(UIWebView*)_engineWebView stringByEvaluatingJavaScriptFromString:javaScriptString];
+	/* There is a deadlock with the web thread. Dont call stringByEvaluatingJavaScriptFromString directly. When this call comes while handleBridgeData, we are in a dead lock. Always call dispatch_async so that web thread, if its waiting, gets unblocked.
+	 */
+	dispatch_async(dispatch_get_main_queue() , ^{
+		NSString* ret = [(UIWebView*)_engineWebView stringByEvaluatingJavaScriptFromString:javaScriptString];
 
-    if (completionHandler) {
-        completionHandler(ret, nil);
-    }
+		if (completionHandler) {
+			completionHandler(ret, nil);
+		}
+	});
 }
 
 - (id)loadRequest:(NSURLRequest*)request
 {
     [(UIWebView*)_engineWebView loadRequest:request];
     return nil;
+}
+
+- (id)loadRequest:(NSURLRequest*)request allowingReadAccessToURL:(NSURL*)readAccessUrl
+{
+	[(UIWebView*)_engineWebView loadRequest:request];
+	return nil;
 }
 
 - (id)loadHTMLString:(NSString*)string baseURL:(NSURL*)baseURL
@@ -176,7 +197,8 @@
 
     if (uiWebViewDelegate &&
         [uiWebViewDelegate conformsToProtocol:@protocol(UIWebViewDelegate)]) {
-        self.uiWebViewDelegate = [[CDVUIWebViewDelegate alloc] initWithDelegate:(id <UIWebViewDelegate>)self.viewController];
+        self.navWebViewDelegate = [[CDVUIWebViewNavigationDelegate alloc] initWithEnginePlugin:self andExternalDelegate:uiWebViewDelegate];
+        self.uiWebViewDelegate = [[CDVUIWebViewDelegate alloc] initWithDelegate:self.navWebViewDelegate];
         uiWebView.delegate = self.uiWebViewDelegate;
     }
 
@@ -193,5 +215,24 @@
 {
     return _engineWebView;
 }
+#pragma mark - cordovaNativeBridgeProtocol
 
+#ifdef DEBUG
+- (void)consoleLog:(NSString *)log
+{
+	NSLog(@"Got log from JS %@", log);
+}
+
+#endif
+
+- (void) handleBridgeData:(NSString*) data
+{
+	/* gap://ready is called. So create a request and pass it to the delegates. This call comes from the web thread. Dont do anything directly. Do it from main thread to avoid threading issues*/
+	dispatch_async(dispatch_get_main_queue(), ^{
+		UIWebView* webView = (UIWebView*)self.engineWebView;
+		NSURL* url = [NSURL URLWithString:data];
+		NSURLRequest* request = [[NSURLRequest alloc] initWithURL:url cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:30.0];
+		[webView.delegate webView:webView shouldStartLoadWithRequest:request navigationType:UIWebViewNavigationTypeOther];
+	});
+}
 @end

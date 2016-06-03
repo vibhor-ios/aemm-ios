@@ -82,4 +82,6 @@
 
 - (void)parseSettingsWithParser:(NSObject <NSXMLParserDelegate>*)delegate;
 
+- (void)updateSettings:(NSDictionary*)settings;
+
 @end

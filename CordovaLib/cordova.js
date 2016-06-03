@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var PLATFORM_VERSION_BUILD_LABEL = '4.2.0-dev';
+var PLATFORM_VERSION_BUILD_LABEL = '4.2.0';
 // file: src/scripts/require.js
 
 /*jshint -W079 */
@@ -972,16 +972,23 @@ function pokeNative() {
         setTimeout(pokeNative);
         return;
     }
-    
-    // Check if they've removed it from the DOM, and put it back if so.
-    if (execIframe && execIframe.contentWindow) {
-        execIframe.contentWindow.location = 'gap://ready';
-    } else {
-        execIframe = document.createElement('iframe');
-        execIframe.style.display = 'none';
-        execIframe.src = 'gap://ready';
-        document.body.appendChild(execIframe);
-    }
+
+	if(typeof cordovaNativeBridge === 'undefined')
+	{
+		// Check if they've removed it from the DOM, and put it back if so.
+		if (execIframe && execIframe.contentWindow) {
+			execIframe.contentWindow.location = 'gap://ready';
+		} else {
+			execIframe = document.createElement('iframe');
+			execIframe.style.display = 'none';
+			execIframe.src = 'gap://ready';
+			document.body.appendChild(execIframe);
+		}
+	}
+	else
+	{
+	   cordovaNativeBridge.handleBridgeData('gap://ready');
+	}
     // Use a timer to protect against iframe being unloaded during the poke (CB-7735).
     // This makes the bridge ~ 7% slower, but works around the poke getting lost
     // when the iframe is removed from the DOM.
@@ -1620,6 +1627,20 @@ function onScriptLoadingComplete(moduleList, finishPluginLoading) {
 // This function is only called if the really is a plugins array that isn't empty.
 // Otherwise the onerror response handler will just call finishPluginLoading().
 function handlePluginsObject(path, moduleList, finishPluginLoading) {
+
+    // HACK: Remove the WkWebView engine plugin if we run in a UIWebView context
+    // UIWebView bridging won't work with the WkWebView engine plugin installed due to changes in cordova.exec module
+    var i = 0;
+    for (i = 0; i < moduleList.length; i++) {
+       if (moduleList[i].id == "cordova-plugin-wkwebview-engine.ios-wkwebview-exec" &&
+           (!window.webkit || !window.webkit.messageHandlers)) {
+            break;
+       }
+    }
+    if (i < moduleList.length) {
+       moduleList.splice(i, 1);
+    }
+
     // Now inject the scripts.
     var scriptCounter = moduleList.length;
 

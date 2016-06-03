@@ -28,8 +28,10 @@
 @protocol CDVWebViewEngineProtocol <NSObject>
 
 @property (nonatomic, strong, readonly) UIView* engineWebView;
+@property (nonatomic, strong) NSDictionary* pluginContext;
 
 - (id)loadRequest:(NSURLRequest*)request;
+- (id)loadRequest:(NSURLRequest*)request allowingReadAccessToURL:(NSURL*)readAccessUrl;
 - (id)loadHTMLString:(NSString*)string baseURL:(NSURL*)baseURL;
 - (void)evaluateJavaScript:(NSString*)javaScriptString completionHandler:(void (^)(id, NSError*))completionHandler;
 

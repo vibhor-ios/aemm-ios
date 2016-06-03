@@ -36,6 +36,8 @@ extern NSString* const CDVPluginResetNotification;
 extern NSString* const CDVLocalNotification;
 extern NSString* const CDVRemoteNotification;
 extern NSString* const CDVRemoteNotificationError;
+extern NSString* const CDVPluginCreatedNotification;
+extern NSString* const CDVPluginDestroyedNotification;
 
 @interface CDVPlugin : NSObject {}
 

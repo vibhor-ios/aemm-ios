@@ -25,11 +25,12 @@
 
 @implementation CDVUIWebViewNavigationDelegate
 
-- (instancetype)initWithEnginePlugin:(CDVPlugin*)theEnginePlugin
+- (instancetype)initWithEnginePlugin:(CDVPlugin*)theEnginePlugin andExternalDelegate:(NSObject <UIWebViewDelegate>*)delegate
 {
     self = [super init];
     if (self) {
         self.enginePlugin = theEnginePlugin;
+		_delegate = delegate;
     }
 
     return self;
@@ -46,6 +47,9 @@
 
     [vc.commandQueue resetRequestId];
     [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:CDVPluginResetNotification object:self.enginePlugin.webView]];
+	if ([_delegate respondsToSelector:@selector(webViewDidStartLoad:)]) {
+		[_delegate webViewDidStartLoad:theWebView];
+	}
 }
 
 /**
@@ -65,23 +69,32 @@
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
 
     [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:CDVPageDidLoadNotification object:self.enginePlugin.webView]];
+	if ([_delegate respondsToSelector:@selector(webViewDidFinishLoad:)]) {
+		[_delegate webViewDidFinishLoad:theWebView];
+	}
 }
 
 - (void)webView:(UIWebView*)theWebView didFailLoadWithError:(NSError*)error
 {
     CDVViewController* vc = (CDVViewController*)self.enginePlugin.viewController;
 
-    [CDVUserAgentUtil releaseLock:vc.userAgentLockToken];
+	if(vc)
+	{
+		[CDVUserAgentUtil releaseLock:vc.userAgentLockToken];
 
-    NSString* message = [NSString stringWithFormat:@"Failed to load webpage with error: %@", [error localizedDescription]];
-    NSLog(@"%@", message);
+		NSString* message = [NSString stringWithFormat:@"Failed to load webpage with error: %@", [error localizedDescription]];
+		NSLog(@"%@", message);
 
-    NSURL* errorUrl = vc.errorURL;
-    if (errorUrl) {
-        errorUrl = [NSURL URLWithString:[NSString stringWithFormat:@"?error=%@", [message stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] relativeToURL:errorUrl];
-        NSLog(@"%@", [errorUrl absoluteString]);
-        [theWebView loadRequest:[NSURLRequest requestWithURL:errorUrl]];
-    }
+		NSURL* errorUrl = vc.errorURL;
+		if (errorUrl) {
+			errorUrl = [NSURL URLWithString:[NSString stringWithFormat:@"?error=%@", [message stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] relativeToURL:errorUrl];
+			NSLog(@"%@", [errorUrl absoluteString]);
+			[theWebView loadRequest:[NSURLRequest requestWithURL:errorUrl]];
+		}
+	}
+	if ([_delegate respondsToSelector:@selector(webView:didFailLoadWithError:)]) {
+		[_delegate webView:theWebView didFailLoadWithError:error];
+	}
 }
 
 - (BOOL)defaultResourcePolicyForURL:(NSURL*)url
@@ -117,7 +130,14 @@
      * Give plugins the chance to handle the url
      */
     BOOL anyPluginsResponded = NO;
-    BOOL shouldAllowRequest = NO;
+    BOOL shouldAllowRequest = YES;
+    
+    if (_delegate && [_delegate respondsToSelector:@selector(webView:shouldStartLoadWithRequest:navigationType:)]) {
+        shouldAllowRequest = [_delegate webView:theWebView shouldStartLoadWithRequest:request navigationType:navigationType];
+    }
+    if (!shouldAllowRequest) {
+        return shouldAllowRequest;
+    }
     
     for (NSString* pluginName in vc.pluginObjects) {
         CDVPlugin* plugin = [vc.pluginObjects objectForKey:pluginName];
@@ -144,7 +164,7 @@
     } else {
         [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:CDVPluginHandleOpenURLNotification object:url]];
     }
-    
+
     return NO;
 }
 

@@ -47,7 +47,7 @@
 
 - (NSString*)pathForResource:(NSString*)resourcepath
 {
-    NSBundle* mainBundle = [NSBundle mainBundle];
+	NSBundle* mainBundle = [NSBundle bundleForClass:[CDVViewController class]];
     NSMutableArray* directoryParts = [NSMutableArray arrayWithArray:[resourcepath componentsSeparatedByString:@"/"]];
     NSString* filename = [directoryParts lastObject];
 

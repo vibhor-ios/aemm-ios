@@ -21,9 +21,12 @@
 #import "CDVUIWebViewEngine.h"
 
 @interface CDVUIWebViewNavigationDelegate : NSObject <UIWebViewDelegate>
+{
+	__weak NSObject <UIWebViewDelegate>* _delegate;
+}
 
 @property (nonatomic, weak) CDVPlugin* enginePlugin;
 
-- (instancetype)initWithEnginePlugin:(CDVPlugin*)enginePlugin;
+- (instancetype)initWithEnginePlugin:(CDVPlugin*)enginePlugin andExternalDelegate:(NSObject <UIWebViewDelegate>*)delegate;
 
 @end

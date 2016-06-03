@@ -23,7 +23,7 @@
 
     <!-- Preferences for iOS -->
     <preference name="AllowInlineMediaPlayback" value="false" />
-    <preference name="BackupWebStorage" value="cloud" />
+    <preference name="BackupWebStorage" value="none" />
     <preference name="DisallowOverscroll" value="false" />
     <preference name="EnableViewportScale" value="false" />
     <preference name="KeyboardDisplayRequiresUserAction" value="true" />
@@ -51,5 +51,8 @@
         <param name="ios-package" value="CDVGestureHandler"/>
         <param name="onload" value="true"/>
     </feature>
+	<!-- Grant all URLs the ability to launch external applications. This will
+	 override all other settings plugins will use. -->
+	<allow-intent href="*" />
 
 </widget>

@@ -120,29 +120,19 @@ function copyTemplateFiles(project_path, project_name, project_template_dir, pac
     shell.mv('-f', path.join(project_path, '__PROJECT_NAME__'), r);
 
     shell.mv('-f', path.join(r, '__PROJECT_NAME__-Info.plist'), path.join(r, project_name+'-Info.plist'));
-    shell.mv('-f', path.join(r, '__PROJECT_NAME__-Prefix.pch'), path.join(r, project_name+'-Prefix.pch'));
+	shell.mv('-f', path.join(r, '__PROJECT_NAME__.h'), path.join(r, project_name+'.h'));
     shell.mv('-f', path.join(r, 'gitignore'), path.join(r, '.gitignore'));
 
     /*replace __PROJECT_NAME__ and --ID-- with ACTIVITY and ID strings, respectively, in:
      *
      * - ./__PROJECT_NAME__.xcodeproj/project.pbxproj
-     * - ./__PROJECT_NAME__/Classes/AppDelegate.h
-     * - ./__PROJECT_NAME__/Classes/AppDelegate.m
-     * - ./__PROJECT_NAME__/Classes/MainViewController.h
-     * - ./__PROJECT_NAME__/Classes/MainViewController.m
-     * - ./__PROJECT_NAME__/Resources/main.m
      * - ./__PROJECT_NAME__/Resources/__PROJECT_NAME__-info.plist
-     * - ./__PROJECT_NAME__/Resources/__PROJECT_NAME__-Prefix.plist
+     * - ./__PROJECT_NAME__/Resources/__PROJECT_NAME__.h
      */
     var project_name_esc = project_name.replace(/&/g, '\\&');
     shell.sed('-i', /__PROJECT_NAME__/g, project_name_esc, path.join(r+'.xcodeproj', 'project.pbxproj'));
-    shell.sed('-i', /__PROJECT_NAME__/g, project_name_esc, path.join(r, 'Classes', 'AppDelegate.h'));
-    shell.sed('-i', /__PROJECT_NAME__/g, project_name_esc, path.join(r, 'Classes', 'AppDelegate.m'));
-    shell.sed('-i', /__PROJECT_NAME__/g, project_name_esc, path.join(r, 'Classes', 'MainViewController.h'));
-    shell.sed('-i', /__PROJECT_NAME__/g, project_name_esc, path.join(r, 'Classes', 'MainViewController.m'));
-    shell.sed('-i', /__PROJECT_NAME__/g, project_name_esc, path.join(r, 'main.m'));
     shell.sed('-i', /__PROJECT_NAME__/g, project_name_esc, path.join(r, project_name+'-Info.plist'));
-    shell.sed('-i', /__PROJECT_NAME__/g, project_name_esc, path.join(r, project_name+'-Prefix.pch'));
+    shell.sed('-i', /__PROJECT_NAME__/g, project_name_esc, path.join(r, project_name+'.h'));
     shell.sed('-i', /--ID--/g, package_name, path.join(r, project_name+'-Info.plist'));
 }
 

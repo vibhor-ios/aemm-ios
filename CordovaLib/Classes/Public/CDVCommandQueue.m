@@ -129,6 +129,7 @@ static const double MAX_EXECUTION_TIME = .008; // Half of a 60fps frame.
                         [_queue removeObjectAtIndex:0];
                     }
                     CDVInvokedUrlCommand* command = [CDVInvokedUrlCommand commandFromJson:jsonEntry];
+                    command.pluginContext = _viewController.webViewEngine.pluginContext;
                     CDV_EXEC_LOG(@"Exec(%@): Calling %@.%@", command.callbackId, command.className, command.methodName);
 
                     if (![self execute:command]) {

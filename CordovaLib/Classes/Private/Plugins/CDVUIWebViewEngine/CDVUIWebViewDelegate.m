@@ -375,7 +375,8 @@ static NSString *stripFragment(NSString* url)
                     _state = STATE_IDLE;
                     fireCallback = YES;
                 }
-                _loadCount = -1;
+                // Fix AEMM-4138205: decrement _loadCount when a frame fails to load
+                _loadCount -= 1;
             } else {
                 fireCallback = YES;
                 _state = STATE_CANCELLED;

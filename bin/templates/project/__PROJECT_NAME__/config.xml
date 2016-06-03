@@ -20,20 +20,21 @@
 <widget xmlns     = "http://www.w3.org/ns/widgets"
         id        = "io.cordova.helloCordova"
         version   = "2.0.0">
-    <name>HelloCordova</name>
+    <name>AEM Mobile Cordova Plugins Framework</name>
 
     <description>
-        A sample Apache Cordova application that responds to the deviceready event.
+        A framework containing Cordova plugins for AEM Mobile. All the plugins respond to the deviceready event.
     </description>
 
-    <author href="http://cordova.io" email="dev@cordova.apache.org">
-        Apache Cordova Team
+    <author href="http://adobe.com" email="wwds@adobe.com">
+        Adobe AEM Mobile Team
     </author>
-
-    <content src="index.html" />
 
     <!-- Whitelist docs: https://github.com/apache/cordova-plugin-whitelist -->
     <access origin="*" />
+	<!-- Grant all URLs the ability to launch external applications. This will
+	 override all the settings below but we'll keep them for reference. -->
+	<allow-intent href="*" />
     <!-- Grant certain URLs the ability to launch external applications. This
          behaviour is set to match that of Cordova versions before 3.6.0, and
          should be reviewed before launching an application in production. It
@@ -49,7 +50,7 @@
 
     <!-- Preferences for iOS -->
     <preference name="AllowInlineMediaPlayback" value="false" />
-    <preference name="BackupWebStorage" value="cloud" />
+    <preference name="BackupWebStorage" value="none" />
     <preference name="DisallowOverscroll" value="false" />
     <preference name="EnableViewportScale" value="false" />
     <preference name="KeyboardDisplayRequiresUserAction" value="true" />

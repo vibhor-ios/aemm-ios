@@ -81,6 +81,9 @@
         [self printVersion];
         [self printMultitaskingInfo];
         [self printPlatformVersionWarning];
+        // Load settings
+        [self loadSettings];
+
         self.initialized = YES;
     }
 }
@@ -142,9 +145,9 @@
 
     // if path is relative, resolve it against the main bundle
     if(![path isAbsolutePath]){
-        NSString* absolutePath = [[NSBundle mainBundle] pathForResource:path ofType:nil];
+        NSString* absolutePath = [[NSBundle bundleForClass:[self class]] pathForResource:path ofType:nil];
         if(!absolutePath){
-            NSAssert(NO, @"ERROR: %@ not found in the main bundle!", path);
+            NSAssert(NO, @"ERROR: %@ not found in the bundle %@!", path, [NSBundle bundleForClass:[self class]].bundleIdentifier);
         }
         path = absolutePath;
     }
@@ -270,9 +273,6 @@
 {
     [super viewDidLoad];
     
-    // Load settings
-    [self loadSettings];
-
     NSString* backupWebStorageType = @"cloud"; // default value
 
     id backupWebStorage = [self.settings cordovaSettingForKey:@"BackupWebStorage"];
@@ -313,31 +313,6 @@
 
         [CDVTimer stop:@"TotalPluginStartup"];
     }
-
-    // /////////////////
-    NSURL* appURL = [self appUrl];
-
-    [CDVUserAgentUtil acquireLock:^(NSInteger lockToken) {
-        _userAgentLockToken = lockToken;
-        [CDVUserAgentUtil setUserAgent:self.userAgent lockToken:lockToken];
-        if (appURL) {
-            NSURLRequest* appReq = [NSURLRequest requestWithURL:appURL cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:20.0];
-            [self.webViewEngine loadRequest:appReq];
-        } else {
-            NSString* loadErr = [NSString stringWithFormat:@"ERROR: Start Page at '%@/%@' was not found.", self.wwwFolderName, self.startPage];
-            NSLog(@"%@", loadErr);
-
-            NSURL* errorUrl = [self errorURL];
-            if (errorUrl) {
-                errorUrl = [NSURL URLWithString:[NSString stringWithFormat:@"?error=%@", [loadErr stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] relativeToURL:errorUrl];
-                NSLog(@"%@", [errorUrl absoluteString]);
-                [self.webViewEngine loadRequest:[NSURLRequest requestWithURL:errorUrl]];
-            } else {
-                NSString* html = [NSString stringWithFormat:@"<html><body> %@ </body></html>", loadErr];
-                [self.webViewEngine loadHTMLString:html baseURL:nil];
-            }
-        }
-    }];
 }
 
 - (NSArray*)parseInterfaceOrientations:(NSArray*)orientations
@@ -540,9 +515,16 @@
     // NOTE: plugin names are matched as lowercase to avoid problems - however, a
     // possible issue is there can be duplicates possible if you had:
     // "org.apache.cordova.Foo" and "org.apache.cordova.foo" - only the lower-cased entry will match
-    NSString* className = [self.pluginsMap objectForKey:[pluginName lowercaseString]];
+    NSString* pluginNameLower = [pluginName lowercaseString];
+    NSString* className = [self.pluginsMap objectForKey:pluginNameLower];
 
     if (className == nil) {
+        return nil;
+    }
+
+    NSSet* allowedPlugins = [self.settings cordovaSettingForKey:@"AllowedPlugins"];
+    if (allowedPlugins && ![allowedPlugins containsObject:pluginNameLower])
+    {
         return nil;
     }
 
@@ -661,11 +643,20 @@
     [CDVUserAgentUtil releaseLock:&_userAgentLockToken];
     [_commandQueue dispose];
     [[self.pluginObjects allValues] makeObjectsPerformSelector:@selector(dispose)];
+    self.webViewEngine = nil;
 }
 
 - (NSInteger*)userAgentLockToken
 {
     return &_userAgentLockToken;
+}
+
+- (void)updateSettings:(NSDictionary *)updateSettings
+{
+    for (NSString* key in updateSettings.allKeys)
+    {
+        [self.settings setCordovaSetting:updateSettings[key] forKey:key];
+    }
 }
 
 @end
