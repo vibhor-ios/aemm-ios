@@ -19,11 +19,11 @@
 
 //
 //  __PROJECT_NAME__.h
--//  __PROJECT_NAME__
--//
--//  Created by ___FULLUSERNAME___ on ___DATE___.
--//  Copyright ___ORGANIZATIONNAME___ ___YEAR___. All rights reserved.
--//
+//  __PROJECT_NAME__
+//
+//  Created by ___FULLUSERNAME___ on ___DATE___.
+//  Copyright ___ORGANIZATIONNAME___ ___YEAR___. All rights reserved.
+//
 //
 
 #import <UIKit/UIKit.h>
