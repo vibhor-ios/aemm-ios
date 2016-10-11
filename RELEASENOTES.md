@@ -18,11 +18,21 @@
 # under the License.
 #
 -->
-## Release Notes for Cordova (iOS) ##
+## Release Notes for AEMM (iOS) ##
 
-Cordova is a static library that enables developers to include the Cordova API in their iOS application projects easily, and also create new Cordova-based iOS application projects through the command-line.
+AEMM (iOS) is a template project that enables developers to include the Cordova API in their AEM Mobile iOS application projects easily.
+
+### 5.0.1 (Oct 11, 2016)
+
+* Allow passing of build flags to xcodebuild
+* Partial revert to cordova-ios functionality for setting user agent
+
+### 5.0.0 (Jun 3, 2016)
+
+* Changes to cordova-ios to produce a framework instead of an App
 
 ### 4.1.0 (Feb 24, 2016)
+
 * CB-10693 added missing header license
 * CB-10530 Updated `cordova.js`. 
 * CB-10530 App freezes sometimes directly after starting on **iOS**
