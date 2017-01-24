@@ -1,6 +1,6 @@
 {
   "name": "cordova-ios",
-  "version": "5.0.2-dev",
+  "version": "5.0.2",
   "description": "aemm-ios release",
   "main": "bin/templates/scripts/cordova/Api.js",
   "repository": {

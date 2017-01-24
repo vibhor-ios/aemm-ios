@@ -22,6 +22,10 @@
 
 AEMM (iOS) is a template project that enables developers to include the Cordova API in their AEM Mobile iOS application projects easily.
 
+### 5.0.2 (Jan 24, 2017)
+
+* [Issue 3](https://github.com/adobe-marketing-cloud-mobile/aemm-ios/issues/3) Fix memory leak caused by strong reference.
+
 ### 5.0.1 (Oct 11, 2016)
 
 * Allow passing of build flags to xcodebuild
