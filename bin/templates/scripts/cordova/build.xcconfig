@@ -33,8 +33,8 @@ CODE_SIGN_IDENTITY = iPhone Developer
 CODE_SIGN_IDENTITY[sdk=iphoneos*] = iPhone Developer
 
 // (CB-9721) Set ENABLE_BITCODE to NO in build.xcconfig
-// Must be enabled for Jupiter
-ENABLE_BITCODE = YES
+// Must force bitcode generation for all invocations of clang for Jupiter
+ BITCODE_GENERATION_MODE = bitcode
 
 // (CB-9719) Set CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES to YES in build.xcconfig
 CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES
